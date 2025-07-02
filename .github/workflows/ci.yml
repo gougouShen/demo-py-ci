@@ -39,7 +39,7 @@ jobs:
       # 5. 运行后台测试并生成覆盖率与 JUnit 报告
       - name: Run tests
         run: |
-          pytest --junitxml=results.xml --cov=src --cov-report=xml --cov-report=html
+          PYTHONPATH=. pytest --junitxml=results.xml --cov=src --cov-report=xml --cov-report=html
 
       # 6. 上传 JUnit 测试报告
       - name: Upload JUnit XML
