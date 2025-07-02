@@ -1,0 +1,55 @@
+name: Python CI Pipeline
+
+# 触发条件：push 或 PR 到 main 分支
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 签出代码
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. 安装 Python
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      # 3. 安装项目依赖 + 测试工具
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools
+          pip install -r requirements.txt || true
+          pip install pytest pytest-cov
+
+      # 4. 编译 & 打包（可选）
+      - name: Build package
+        run: |
+          python setup.py sdist bdist_wheel
+
+      # 5. 运行后台测试并生成覆盖率与 JUnit 报告
+      - name: Run tests
+        run: |
+          pytest --junitxml=results.xml --cov=src --cov-report=xml --cov-report=html
+
+      # 6. 上传 JUnit 测试报告
+      - name: Upload JUnit XML
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-results
+          path: results.xml
+
+      # 7. 上传 Coverage HTML 报告
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: htmlcov/
